@@ -1,0 +1,1 @@
+//jedi-archive.ad.cgillett.com/Media /mnt/Media cifs credentials=/etc/smbcreds,uid=0,iocharset=utf8,vers=3.0,noperm,nofail,x-systemd.automount 0 0

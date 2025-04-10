@@ -1,0 +1,8 @@
+[Unit]
+Description=Check and remount /mnt/Media if needed
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/mount-check.sh

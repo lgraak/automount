@@ -14,7 +14,48 @@ This is useful when:
 - `mount-check.sh`: A script to verify that a given mount point is active. If not, it attempts to remount it.
 - `mount-check.service`: A systemd service unit to run the script.
 - `mount-check.timer`: A systemd timer unit to run the service every 10 minutes.
-- Template `fstab` entry to use in your containers.
+- `install-automount.sh`: A setup script to install and enable everything automatically.
+- `fstab-template.txt`: A reference fstab line for Samba mounts.
+
+---
+
+## 🛠️ Setup Instructions
+
+### 1. Clone This Repository
+
+#### 🐧 First, install Git:
+
+- **Debian/Ubuntu**:
+  ```bash
+  sudo apt update && sudo apt install git
+  ```
+
+- **Arch Linux**:
+  ```bash
+  sudo pacman -S git
+  ```
+
+#### 📥 Then clone the repo:
+
+```bash
+git clone git@github.com:lgraak/automount.git
+cd automount
+```
+
+---
+
+### 2. Run the Installation Script
+
+```bash
+chmod +x install-automount.sh
+./install-automount.sh
+```
+
+This script will:
+- Copy `mount-check.sh` to `/usr/local/bin`
+- Install and enable the systemd service and timer
+- Add the fstab entry for the Samba share if not already present
+- Reload systemd and start the timer
 
 ---
 
@@ -23,49 +64,34 @@ This is useful when:
 ```
 automount/
 ├── README.md
-├── mount-check.sh
-├── mount-check.service
-├── mount-check.timer
 ├── fstab-template.txt
+├── install-automount.sh
+├── mount-check.service
+├── mount-check.sh
+├── mount-check.timer
 ```
 
 ---
 
-## 🛠 Setup Instructions
+## 📄 fstab Entry Example
 
-1. **Place the script**
-   Copy `mount-check.sh` to `/usr/local/bin/`:
+Add this to your `/etc/fstab` (the script will try to do it for you):
 
-   ```bash
-   sudo cp mount-check.sh /usr/local/bin/
-   sudo chmod +x /usr/local/bin/mount-check.sh
-   ```
-
-2. **Copy the systemd service and timer files**
-
-   ```bash
-   sudo cp mount-check.service /etc/systemd/system/
-   sudo cp mount-check.timer /etc/systemd/system/
-   ```
-
-3. **Enable and start the timer**
-
-   ```bash
-   sudo systemctl daemon-reload
-   sudo systemctl enable --now mount-check.timer
-   ```
-
-4. **Use this `/etc/fstab` entry** in the container:
-
-   ```
-   //jedi-archive.ad.cgillett.com/Media /mnt/Media cifs credentials=/etc/smbcreds,uid=0,iocharset=utf8,vers=3.0,noperm,nofail,x-systemd.automount 0 0
-   ```
+```
+/etc/fstab:
+//jedi-archive.ad.cgillett.com/Media /mnt/Media cifs credentials=/etc/smbcreds,uid=0,iocharset=utf8,vers=3.0,noperm,nofail,x-systemd.automount 0 0
+```
 
 ---
 
 ## 💬 Notes
 
-- Adjust `MOUNT_POINT` in `mount-check.sh` if needed.
-- Logs are written to `/var/log/mount-check.log` by default.
-- `x-systemd.automount` helps avoid boot issues if the share isn't up.
+- Adjust `MOUNT_POINT` in `mount-check.sh` if you want a different mount target.
+- Logs will be written to `/var/log/mount-check.log`.
+- The timer checks every 10 minutes and attempts a remount if needed.
+- You can check the timer with:
+  ```bash
+  systemctl list-timers --all | grep mount-check
+  journalctl -u mount-check.service
+  ```
 
